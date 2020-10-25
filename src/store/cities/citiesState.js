@@ -5,7 +5,8 @@ const state = {
   searchCities: citiesFactory(),
   preferences: [],
   preferredCities: citiesFactory(),
-  countries: []
+  countries: [],
+  cancelReques: undefined
 }
 
 export default state

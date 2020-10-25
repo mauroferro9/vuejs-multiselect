@@ -1,8 +1,14 @@
 import CitiesService from '@/services/cities.service'
 
 const actions = {
-  getCities({ commit }, payload) {
-    return CitiesService.getCities(payload).then(response => {
+  getCities({ state, commit }, payload) {
+    if (state.cancelRequest) {
+      state.cancelRequest()
+    }
+    const executor = c => {
+      state.cancelRequest = c
+    }
+    return CitiesService.getCities(payload, executor).then(response => {
       const isSearch = payload.filter
       if (isSearch) {
         commit('setSearchCities', {

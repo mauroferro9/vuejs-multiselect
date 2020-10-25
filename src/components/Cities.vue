@@ -37,6 +37,9 @@
         <span v-if="loading && !retries" class="loading-wrapper">
           <i class="el-icon-loading primary"></i> Loading
         </span>
+        <span v-if="!loading && !retries && !items.length">
+          No se encontraron resultados.
+        </span>
       </div>
       <span v-if="retries">Retry #{{ retries }}/2</span>
     </div>
@@ -147,7 +150,7 @@ export default {
       }
     },
     async fetchSearchCities(offset, newSearch = false) {
-      if (this.filteredCities.lastPage) return
+      if (this.filteredCities.lastPage && !newSearch) return
 
       try {
         this.loading = true
