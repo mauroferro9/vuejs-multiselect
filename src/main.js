@@ -4,11 +4,13 @@ import router from './router'
 import store from './store'
 import './registerServiceWorker'
 import i18n from './i18n'
-import { Input, Button, Loading } from 'element-ui'
+import { Input, Button, Loading, Avatar, Tag } from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 
 Vue.use(Input)
 Vue.use(Button)
+Vue.use(Avatar)
+Vue.use(Tag)
 Vue.use(Loading.directive)
 
 Vue.prototype.$loading = Loading.service

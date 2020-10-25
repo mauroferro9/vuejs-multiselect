@@ -1,10 +1,11 @@
+import { citiesFactory } from '@/factory'
+
 const state = {
-  cities: {
-    data: [],
-    links: {},
-    total: 0
-  },
-  preferences: []
+  cities: citiesFactory(),
+  searchCities: citiesFactory(),
+  preferences: [],
+  preferredCities: citiesFactory(),
+  countries: []
 }
 
 export default state

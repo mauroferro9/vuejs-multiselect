@@ -4,6 +4,15 @@ const getters = {
   },
   preferences: state => {
     return state.preferences
+  },
+  preferredCities: state => {
+    return state.preferredCities
+  },
+  searchCities: state => {
+    return state.searchCities
+  },
+  countries: state => {
+    return state.countries
   }
 }
 

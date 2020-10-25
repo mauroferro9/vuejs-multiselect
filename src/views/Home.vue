@@ -14,3 +14,11 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+.home {
+  display: flex;
+  flex-grow: 1;
+  justify-content: center;
+}
+</style>
