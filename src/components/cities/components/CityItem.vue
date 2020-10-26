@@ -160,7 +160,7 @@ export default {
   .highlight {
     .text__highlight {
       color: white;
-      background: $secondary;
+      background: $secondary-color;
       font-weight: bold;
     }
   }

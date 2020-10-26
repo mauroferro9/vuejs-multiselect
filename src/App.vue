@@ -19,6 +19,25 @@ export default {
 <style lang="scss">
 html {
   font-family: Avenir, Helvetica, Arial, sans-serif;
+
+  .el-loading-spinner .path {
+    stroke: $secondary-color;
+  }
+  .el-radio-button__orig-radio:checked + .el-radio-button__inner,
+  .el-button--primary,
+  .el-button--primary:hover {
+    background-color: $secondary-color;
+    border-color: $secondary-color;
+  }
+  .el-radio-button__inner:hover,
+  .el-button--text,
+  .el-button--text:hover {
+    color: $secondary-color;
+  }
+  .el-input.is-active .el-input__inner,
+  .el-input__inner:focus {
+    border-color: $secondary-color;
+  }
 }
 #app {
   -webkit-font-smoothing: antialiased;

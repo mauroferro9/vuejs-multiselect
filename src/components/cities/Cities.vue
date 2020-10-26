@@ -42,30 +42,19 @@
               <!-- @onUpdate="updateCity" -->
             </template>
           </InfiniteScroll>
-          <Message
+          <!-- <Message
             icon="el-icon-loading"
             class="loading-wrapper"
             v-if="loading && !retries"
-          />
-          <!-- <span v-if="loading && !retries" class="loading-wrapper">
-          <i class="el-icon-loading"></i>
-        </span> -->
+          /> -->
+          <div v-loading="loading && !retries"></div>
           <Message
             icon="el-icon-warning-outline"
             :text="$t('noResults')"
             v-if="!loading && !retries && !items.length"
           />
-          <!-- <span v-if="!loading && !retries && !items.length">
-          <i class="el-icon-warning-outline"></i>
-          No se encontraron resultados.
-        </span> -->
         </div>
         <Message :text="$t('errorMessages.more')" v-if="!loading && retries" />
-        <!-- <span v-if="retries" class="loading-wrapper">
-        <i class="el-icon-loading"></i>
-        <span>Oops! An error has ocurred while getting more cities.</span><br />
-        <span>Let's try one more time!</span>
-      </span> -->
       </div>
     </div>
   </section>
@@ -77,7 +66,7 @@ import debounce from 'lodash.debounce'
 import CityItem from './components/CityItem'
 
 const DEBOUNCE_TIME = 300
-const TIMEOUT_TIME = 2000
+const TIMEOUT_TIME = 3000
 
 export default {
   name: 'Cities',
@@ -139,9 +128,9 @@ export default {
         await this.getPreferences()
       } catch (error) {
         this.$notify.error({
-          message: `${this.$i18n.t(
-            'errorMessages.fav'
-          )}: "${error}". ${this.$i18n.t('tryAgain')}`,
+          message: `${this.$i18n.t('errorMessages.fav')}: "${
+            error.message
+          }". ${this.$i18n.t('tryAgain')}`,
           position: 'bottom-right'
         })
       } finally {
@@ -185,9 +174,9 @@ export default {
         } else {
           // TODO: allow mannualy retry
           this.$notify.error({
-            message: `${this.$i18n.t(
-              'errorMessages.fav'
-            )}: "${error}". ${this.$i18n.t('tryAgain')}`,
+            message: `${this.$i18n.t('errorMessages.fav')}: "${
+              error.message
+            }". ${this.$i18n.t('tryAgain')}`,
             position: 'bottom-right'
           })
         }
@@ -229,9 +218,9 @@ export default {
         })
       } catch (error) {
         this.$notify.error({
-          message: `${this.$i18n.t(
-            'errorMessages.delete'
-          )}: "${error}". ${this.$i18n.t('tryAgain')}`,
+          message: `${this.$i18n.t('errorMessages.delete')}: "${
+            error.message
+          }". ${this.$i18n.t('tryAgain')}`,
           position: 'bottom-right'
         })
       }
