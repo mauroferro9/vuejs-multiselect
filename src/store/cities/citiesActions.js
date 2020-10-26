@@ -3,7 +3,7 @@ import CitiesService from '@/services/cities.service'
 const actions = {
   getCities({ state, commit }, payload) {
     if (state.cancelRequest) {
-      state.cancelRequest()
+      state.cancelRequest('cancelled')
     }
     const executor = c => {
       state.cancelRequest = c
@@ -38,23 +38,51 @@ const actions = {
   },
   getPreferences({ commit }) {
     return CitiesService.getPreferences()
-      .then(response => {
+      .then(async response => {
         commit('setPreferences', response.data)
         let promises = []
-        const citiesIds = response.data && response.data.data
+        let citiesIds = response.data && response.data.data
 
-        citiesIds.forEach(cityId => {
-          promises.push(CitiesService.getCityById(cityId))
-        })
+        // citiesIds.forEach(cityId => {
+        //   promises.push(CitiesService.getCityById(cityId))
+        // })
 
-        return Promise.all(promises)
-          .then(responses => {
-            const citiesInfo = responses.map(r => r.data)
-            commit('setPreferredCities', citiesInfo)
+        // return Promise.all(promises)
+        //   .then(responses => {
+        //     const citiesInfo = responses.map(r => r.data)
+        //     commit('setPreferredCities', citiesInfo)
+        //   })
+        //   .catch(error => {
+        //     throw error
+        //   })
+        let allFulfilled = false
+        let tries = 2
+
+        while (tries > 0 && !allFulfilled) {
+          citiesIds.forEach(cityId => {
+            promises.push(CitiesService.getCityById(cityId))
           })
-          .catch(error => {
-            throw error
-          })
+          const results = await Promise.allSettled(promises)
+          const fulfilled = results
+            .filter(result => result.status === 'fulfilled')
+            .map(result => result.value.data)
+          commit('setPreferredCities', fulfilled)
+
+          citiesIds = results
+            .filter(result => result.status === 'rejected')
+            .map(r =>
+              r.reason.config.url.substring(
+                r.reason.config.url.lastIndexOf('/') + 1
+              )
+            )
+
+          allFulfilled = citiesIds.length === 0
+          promises = []
+          tries--
+        }
+        if (!allFulfilled) {
+          Promise.reject('lalalala')
+        }
       })
       .catch(error => {
         throw error

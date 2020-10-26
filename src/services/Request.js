@@ -8,7 +8,16 @@ axios.interceptors.response.use(
     return response
   },
   function(error) {
-    return Promise.reject(error.response)
+    if (error && error.message === 'cancelled') {
+      //custom messages
+      return Promise.reject(error.message)
+    } else {
+      return error.response &&
+        error.response.data &&
+        error.response.data.message
+        ? Promise.reject(error.response.data.message)
+        : Promise.reject(error.message)
+    }
   }
 )
 

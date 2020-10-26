@@ -1,8 +1,18 @@
 <template>
   <section class="cities">
+    <!-- <input type="radio" value="en" name="en" v-model="locale" />
+    <label for="en">English</label><br />
+
+    <input type="radio" value="es" name="es" v-model="locale" />
+    <label for="es">Español</label><br /> -->
+    <el-radio-group v-model="locale">
+      <el-radio-button label="es">Español</el-radio-button>
+      <el-radio-button label="en">English</el-radio-button>
+    </el-radio-group>
+
     <div class="cities-body">
       <h1 v-if="preferredCities.data.length">
-        My favorite cities ({{ preferredCities.data.length }})
+        {{ $t('titleFavorite') }} ({{ preferredCities.data.length }})
       </h1>
 
       <TagList
@@ -16,7 +26,7 @@
       <el-input
         v-model="search"
         prefix-icon="el-icon-search"
-        placeholder="Please select your fav cities"
+        :placeholder="$t('search.placeholder')"
         clearable
         @input="filterCities"
         class="cities-body__search"
@@ -26,22 +36,37 @@
         <InfiniteScroll
           :items="items"
           item-key="geonameid"
-          :offset="offset"
-          :limit="limit"
           @refetch="fetchCities"
         >
           <template v-slot:item="{ item }">
             <CityItem :item="item" :highlight="highlightText" />
+            <!-- @onUpdate="updateCity" -->
           </template>
         </InfiniteScroll>
-        <span v-if="loading && !retries" class="loading-wrapper">
-          <i class="el-icon-loading primary"></i> Loading
-        </span>
-        <span v-if="!loading && !retries && !items.length">
+        <Message
+          icon="el-icon-loading"
+          class="loading-wrapper"
+          v-if="loading && !retries"
+        />
+        <!-- <span v-if="loading && !retries" class="loading-wrapper">
+          <i class="el-icon-loading"></i>
+        </span> -->
+        <Message
+          icon="el-icon-warning-outline"
+          :text="$t('noResults')"
+          v-if="!loading && !retries && !items.length"
+        />
+        <!-- <span v-if="!loading && !retries && !items.length">
+          <i class="el-icon-warning-outline"></i>
           No se encontraron resultados.
-        </span>
+        </span> -->
       </div>
-      <span v-if="retries">Retry #{{ retries }}/2</span>
+      <Message :text="$t('errorMessages.more')" v-if="!loading && retries" />
+      <!-- <span v-if="retries" class="loading-wrapper">
+        <i class="el-icon-loading"></i>
+        <span>Oops! An error has ocurred while getting more cities.</span><br />
+        <span>Let's try one more time!</span>
+      </span> -->
     </div>
   </section>
 </template>
@@ -51,10 +76,13 @@ import { mapGetters, mapActions } from 'vuex'
 import debounce from 'lodash.debounce'
 import CityItem from './CityItem'
 
+const DEBOUNCE_TIME = 300
+
 export default {
   name: 'Cities',
   data() {
     return {
+      locale: this.$i18n.locale,
       search: '',
       allCities: {
         offset: 0,
@@ -67,7 +95,13 @@ export default {
         offset: 0,
         limit: 20,
         lastPage: false
-      }
+      },
+      currentOffset: 0
+    }
+  },
+  watch: {
+    locale(val) {
+      this.$i18n.locale = val
     }
   },
   computed: {
@@ -93,7 +127,8 @@ export default {
   components: {
     CityItem,
     TagList: () => import('./TagList.vue'),
-    InfiniteScroll: () => import('./InfiniteScroll.vue')
+    InfiniteScroll: () => import('./InfiniteScroll.vue'),
+    Message: () => import('./Message.vue')
   },
   methods: {
     ...mapActions('cities', [
@@ -107,17 +142,27 @@ export default {
       try {
         await this.getPreferences()
       } catch (error) {
-        console.warn(error)
-        this.error = error
+        this.$notify.error({
+          message: `${this.$i18n.t(
+            'errorMessages.fav'
+          )}: "${error}". ${this.$i18n.t('tryAgain')}`,
+          position: 'bottom-right'
+        })
       } finally {
         this.loading = false
       }
     },
-    fetchCities(offset) {
-      this.search
-        ? this.fetchSearchCities(offset, true)
-        : this.fetchAllCities(offset)
+    fetchCities() {
+      if (!this.loading) {
+        this.currentOffset += this.limit
+        this.search
+          ? this.fetchSearchCities(this.currentOffset, true)
+          : this.fetchAllCities(this.currentOffset)
+      }
     },
+    filterCities: debounce(function() {
+      this.search ? this.fetchSearchCities(0, true) : this.fetchAllCities(0)
+    }, DEBOUNCE_TIME),
     async fetchAllCities(offset) {
       if (this.allCities.lastPage) return
 
@@ -138,12 +183,13 @@ export default {
             this.fetchAllCities(this.allCities.offset)
           }, 1000)
         } else {
-          // TODO: show retry mannualy or error message
-          // this.$notify.error({
-          //   title: 'Custom Position',
-          //   message: error.data.message,
-          //   position: 'bottom-right'
-          // })
+          // TODO: allow mannualy retry
+          this.$notify.error({
+            message: `${this.$i18n.t(
+              'errorMessages.fav'
+            )}: "${error}". ${this.$i18n.t('tryAgain')}`,
+            position: 'bottom-right'
+          })
         }
       } finally {
         this.loading = false
@@ -164,12 +210,13 @@ export default {
         this.filteredCities.lastPage =
           offset + this.filteredCities.limit >= this.searchCities.total
       } catch (error) {
+        if (error.message === 'cancelled') return
         this.retries++
         if (this.retries <= 2) {
           this.filteredCities.offset = offset
           setTimeout(() => {
             this.fetchSearchCities(this.filteredCities.offset)
-          }, 1000)
+          }, 300)
         }
       } finally {
         this.loading = false
@@ -181,17 +228,49 @@ export default {
           [cityId]: false
         })
       } catch (error) {
-        console.warn(error)
+        this.$notify.error({
+          message: `${this.$i18n.t(
+            'errorMessages.delete'
+          )}: "${error}". ${this.$i18n.t('tryAgain')}`,
+          position: 'bottom-right'
+        })
       }
-    },
-    filterCities: debounce(function() {
-      this.fetchSearchCities(0, true)
-    }, 300)
+    }
   },
   async mounted() {
     await this.fetchPreferences()
     this.getCountries()
     await this.fetchAllCities(this.allCities.offset)
+  },
+  i18n: {
+    messages: {
+      es: {
+        titleFavorite: 'Mis ciudades favoritas',
+        search: {
+          placeholder: 'Seleccione o busque sus ciudades favoritas'
+        },
+        noResults: 'No se encontraron resultados',
+        tryAgain: 'Por favor, intente nuevamente.',
+        errorMessages: {
+          more: `Ups! Ha ocurrido un error al recuperar más ciudades. Intentemos nuevamente!`,
+          fav: 'No se pudieron obtenes sus ciudades favoritas',
+          delete: 'No se pudo eliminar la ciudad favorita'
+        }
+      },
+      en: {
+        titleFavorite: 'My favorite cities',
+        search: {
+          placeholder: 'Select or search your favorite cities'
+        },
+        noResults: 'No results found',
+        tryAgain: 'Please, try again.',
+        errorMessages: {
+          more: `Oops! An error has ocurred while getting more cities. Let's try one more time!`,
+          fav: 'Could not get your favorite cities',
+          delete: 'Could not delete favorite city'
+        }
+      }
+    }
   }
 }
 </script>
@@ -220,14 +299,19 @@ export default {
 
     &__list {
       margin-top: 0;
+      min-height: 60px;
       max-height: 50vh;
       overflow: auto;
       border: solid 1px #dcdfe6;
       border-top: none;
       border-radius: 0 0 4px 4px;
+    }
+    .loading-wrapper {
+      min-height: 40px;
 
-      .loading-wrapper {
-        min-height: 40px;
+      [class^='el-icon-'] {
+        font-size: 30px;
+        color: #0471a6;
       }
     }
   }

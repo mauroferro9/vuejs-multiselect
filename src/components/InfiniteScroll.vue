@@ -1,11 +1,11 @@
 <template>
-  <div style="margin: 5px 0;">
+  <section>
     <div v-for="item in items" :key="item[itemKey]">
       <slot name="item" v-bind:item="item" />
     </div>
 
-    <div v-if="items.length" v-observe-visibility="handleScroll"></div>
-  </div>
+    <div v-show="items.length" v-observe-visibility="handleScroll"></div>
+  </section>
 </template>
 
 <script>
@@ -23,33 +23,14 @@ export default {
     itemKey: {
       type: String,
       required: true
-    },
-    offset: {
-      type: Number,
-      default: 0
-    },
-    limit: {
-      type: Number,
-      default: 20
-    }
-  },
-  data() {
-    return {
-      currentOffset: 0
     }
   },
   methods: {
     handleScroll(isVisible) {
-      if (!isVisible) return
-      this.currentOffset += this.limit
-      // this.fetch()
-      this.$emit('refetch', this.currentOffset)
+      // TODO: handle short list
+      if (!isVisible || this.items.length <= 6) return
+      this.$emit('refetch')
     }
-  },
-  mounted() {
-    this.currentOffset = this.offset
   }
 }
 </script>
-
-<style lang="scss" scoped></style>

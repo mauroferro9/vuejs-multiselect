@@ -1,5 +1,8 @@
+import { citiesFactory } from '@/factory'
+
 const mutations = {
   setCities(state, cities) {
+    state.searchCities = citiesFactory()
     state.cities.data.push(...cities.data)
     state.cities.links = cities.links
     state.cities.total = cities.total
@@ -32,6 +35,7 @@ const mutations = {
     state.preferredCities.total--
   },
   setSearchCities(state, payload) {
+    state.cities = citiesFactory()
     const searchCities = payload.data
     if (payload.newSearch) {
       state.searchCities.data = searchCities.data

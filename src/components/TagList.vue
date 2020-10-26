@@ -4,11 +4,27 @@
       v-for="item in items"
       :key="item[itemKey]"
       :disable-transitions="false"
-      :closable="closable"
-      @close="removeItem(item)"
       class="tag"
     >
       {{ item.name }}
+      <el-popconfirm
+        v-show="closable"
+        :confirmButtonText="$t('yes')"
+        :cancelButtonText="$t('no')"
+        icon="el-icon-delete"
+        iconColor="red"
+        placement="top"
+        :title="$t('confirm')"
+        @onConfirm="removeItem(item)"
+      >
+        <el-button
+          slot="reference"
+          icon="el-icon-close"
+          type="text"
+          size="mini"
+          round
+        />
+      </el-popconfirm>
     </el-tag>
   </section>
 </template>
@@ -34,6 +50,20 @@ export default {
     removeItem(item) {
       this.$emit('onRemove', item[this.itemKey])
     }
+  },
+  i18n: {
+    messages: {
+      es: {
+        confirm: 'Está seguro de eliminar el item?',
+        yes: 'Sí, eliminar!',
+        no: 'No, gracias'
+      },
+      en: {
+        confirm: 'Are you sure to delete this item?',
+        yes: 'Yes, delete!',
+        no: 'No, thanks'
+      }
+    }
   }
 }
 </script>
@@ -49,6 +79,11 @@ export default {
     margin: 5px 0;
     &:not(:first-of-type) {
       margin-left: 10px;
+    }
+    .el-icon-close:hover {
+      color: #fff;
+      background-color: #409eff;
+      border-radius: 50%;
     }
   }
 }
