@@ -1,23 +1,33 @@
 <template>
   <section class="cities">
-    <h1 class="title">
-      <span v-if="preferredCities.data.length">
-        <i class="el-icon-collection-tag"></i>
-        {{ $t('titleFavorite') }} ({{ preferredCities.data.length }})
-      </span>
-      <span v-if="!preferredCities.data.length && !loading">
-        ☹️ Aun no tiene ciudades
-      </span>
-    </h1>
+    <div v-loading="loadingFav" :element-loading-text="$t('loading.fav')">
+      <h1 class="title">
+        <span v-if="preferredCities.data.length">
+          <i class="el-icon-collection-tag"></i>
+          {{ $t('titleFavorite') }} ({{ preferredCities.data.length }})
+        </span>
+        <span v-else-if="!loadingFav && !showReloadFav">
+          <i class="el-icon-info"></i> {{ $t('noFavs') }}
+        </span>
+        <el-button
+          v-if="showReloadFav"
+          type="primary"
+          icon="el-icon-refresh"
+          @click="fetchPreferences"
+        >
+          {{ $t('reloadFav') }}
+        </el-button>
+      </h1>
 
-    <div class="cities-header">
-      <TagList
-        v-if="preferredCities.data"
-        :items="preferredCities.data"
-        item-key="geonameid"
-        :closable="true"
-        @onRemove="removeCity"
-      />
+      <div class="cities-header">
+        <TagList
+          v-if="preferredCities.data"
+          :items="preferredCities.data"
+          item-key="geonameid"
+          :closable="true"
+          @onRemove="removeCity"
+        />
+      </div>
     </div>
 
     <div class="body-wrapper">
@@ -27,15 +37,19 @@
           prefix-icon="el-icon-search"
           :placeholder="$t('search.placeholder')"
           clearable
-          @input="filterCities"
+          @input="searchCitiesByText"
           class="cities-body__search"
         />
 
-        <div class="cities-body__list">
+        <div
+          class="cities-body__list"
+          v-loading="loading"
+          :element-loading-text="$t('loading.cities')"
+        >
           <InfiniteScroll
             :items="items"
             item-key="geonameid"
-            @refetch="fetchCities"
+            @refetch="loadMore"
           >
             <template v-slot:item="{ item }">
               <CityItem :item="item" :highlight="highlightText" />
@@ -47,14 +61,14 @@
             class="loading-wrapper"
             v-if="loading && !retries"
           /> -->
-          <div v-loading="loading && !retries"></div>
+          <div v-loading="loading && !retries" style="min-height: 50px"></div>
           <Message
             icon="el-icon-warning-outline"
             :text="$t('noResults')"
             v-if="!loading && !retries && !items.length"
           />
         </div>
-        <Message :text="$t('errorMessages.more')" v-if="!loading && retries" />
+        <!-- <Message :text="$t('errorMessages.more')" v-if="!loading && retries" /> -->
       </div>
     </div>
   </section>
@@ -80,12 +94,14 @@ export default {
       },
       retries: 0,
       loading: false,
+      loadingFav: false,
       filteredCities: {
         offset: 0,
         limit: 20,
         lastPage: false
       },
-      currentOffset: 0
+      currentOffset: 0,
+      showReloadFav: false
     }
   },
 
@@ -94,7 +110,8 @@ export default {
       'cities',
       'preferences',
       'searchCities',
-      'preferredCities'
+      'preferredCities',
+      'preferredCitiesIds'
     ]),
     items() {
       return this.search ? this.searchCities.data : this.cities.data
@@ -123,25 +140,28 @@ export default {
       'getCountries'
     ]),
     async fetchPreferences() {
-      this.loading = true
+      this.showReloadFav = false
+      this.loadingFav = true
       try {
         await this.getPreferences()
       } catch (error) {
+        this.showReloadFav = true
         this.$notify.error({
           message: `${this.$i18n.t('errorMessages.fav')}: "${
-            error.message
+            error.data.message
           }". ${this.$i18n.t('tryAgain')}`,
           position: 'bottom-right'
         })
       } finally {
-        this.loading = false
+        this.loadingFav = false
       }
     },
-    fetchCities() {
+    loadMore() {
       // const isLastPage = this.search
       //   ? this.currentOffset + this.filteredCities.limit >=
       //     this.searchCities.total
       //   : this.currentOffset + this.allCities.limit >= this.cities.total
+
       if (!this.loading) {
         this.currentOffset += this.limit
         this.search
@@ -149,7 +169,7 @@ export default {
           : this.fetchAllCities(this.currentOffset)
       }
     },
-    filterCities: debounce(function() {
+    searchCitiesByText: debounce(function() {
       this.search ? this.fetchSearchCities(0, true) : this.fetchAllCities(0)
     }, DEBOUNCE_TIME),
     async fetchAllCities(offset) {
@@ -171,6 +191,10 @@ export default {
           setTimeout(() => {
             this.fetchAllCities(this.allCities.offset)
           }, TIMEOUT_TIME)
+          this.$notify.warning({
+            message: this.$i18n.t('errorMessages.more'),
+            position: 'bottom-right'
+          })
         } else {
           // TODO: allow mannualy retry
           this.$notify.error({
@@ -185,6 +209,9 @@ export default {
       }
     },
     async fetchSearchCities(offset, newSearch = false) {
+      // console.warn(offset, JSON.stringify(this.filteredCities))
+      // console.warn(this.searchCities.total)
+      console.warn(newSearch)
       if (this.filteredCities.lastPage && !newSearch) return
 
       try {
@@ -204,7 +231,7 @@ export default {
         if (this.retries <= 2) {
           this.filteredCities.offset = offset
           setTimeout(() => {
-            this.fetchSearchCities(this.filteredCities.offset)
+            this.fetchSearchCities(offset)
           }, TIMEOUT_TIME)
         }
       } finally {
@@ -213,6 +240,7 @@ export default {
     },
     async removeCity(cityId) {
       try {
+        this.loadingFav = true
         await this.saveCities({
           [cityId]: false
         })
@@ -223,13 +251,15 @@ export default {
           }". ${this.$i18n.t('tryAgain')}`,
           position: 'bottom-right'
         })
+      } finally {
+        this.loadingFav = false
       }
     }
   },
-  async mounted() {
-    await this.fetchPreferences()
+  mounted() {
+    this.fetchPreferences()
     this.getCountries()
-    await this.fetchAllCities(this.allCities.offset)
+    this.fetchAllCities(this.allCities.offset)
   },
   i18n: {
     messages: {
@@ -240,10 +270,16 @@ export default {
         },
         noResults: 'No se encontraron resultados',
         tryAgain: 'Por favor, intente nuevamente.',
+        noFavs: 'Aún no tiene ciudades favoritas',
+        reloadFav: 'Recargar favoritos',
         errorMessages: {
           more: `Ups! Ha ocurrido un error al recuperar más ciudades. Intentemos nuevamente!`,
           fav: 'No se pudieron obtenes sus ciudades favoritas',
           delete: 'No se pudo eliminar la ciudad favorita'
+        },
+        loading: {
+          cities: 'Cargando ciudades',
+          fav: 'Cargando favoritos'
         }
       },
       en: {
@@ -252,11 +288,17 @@ export default {
           placeholder: 'Select or search your favorite cities'
         },
         noResults: 'No results found',
+        noFavs: `You don't have favorite cities yet`,
         tryAgain: 'Please, try again.',
+        reloadFav: 'Reload favorites',
         errorMessages: {
           more: `Oops! An error has ocurred while getting more cities. Let's try one more time!`,
           fav: 'Could not get your favorite cities',
           delete: 'Could not delete favorite city'
+        },
+        loading: {
+          cities: 'Loading cities',
+          fav: 'Loading favorites'
         }
       }
     }
@@ -275,7 +317,7 @@ export default {
   .cities-header {
     margin-bottom: 20px;
     overflow: auto;
-    height: 30vh;
+    height: 20vh;
   }
   .title {
     font-size: 1.1rem;

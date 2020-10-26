@@ -31,7 +31,8 @@ html {
   }
   .el-radio-button__inner:hover,
   .el-button--text,
-  .el-button--text:hover {
+  .el-button--text:hover,
+  .el-loading-spinner .el-loading-text {
     color: $secondary-color;
   }
   .el-input.is-active .el-input__inner,
@@ -39,6 +40,7 @@ html {
     border-color: $secondary-color;
   }
 }
+
 #app {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -47,7 +49,7 @@ html {
 }
 
 #nav {
-  padding: 30px;
+  padding: 10px;
 
   a {
     font-weight: bold;

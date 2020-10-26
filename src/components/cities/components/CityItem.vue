@@ -23,6 +23,9 @@
       </div>
     </div>
     <i v-show="isPreferred" class="el-icon-collection-tag"></i>
+    <div v-show="!isPreferred && isCapitalCity" class="recommended">
+      <i class="el-icon-star-off"></i> {{ $t('recommended') }}
+    </div>
     <!-- 
     <el-button
       v-if="isPreferred"
@@ -57,7 +60,12 @@ export default {
     TextHighlight: () => import('vue-text-highlight')
   },
   computed: {
-    ...mapGetters('cities', ['preferredCities', 'countries']),
+    ...mapGetters('cities', [
+      'preferredCities',
+      'countries',
+      'preferredCitiesIds',
+      'capitalCities'
+    ]),
     hasFlag() {
       return this.countries[this.item.country.toLowerCase()]
     },
@@ -65,11 +73,15 @@ export default {
       return this.countries[this.item.country.toLowerCase()].flag
     },
     isPreferred() {
-      return (
-        this.preferredCities.data.findIndex(
-          city => city.geonameid === this.item.geonameid
-        ) !== -1
-      )
+      // return (
+      //   this.preferredCities.data.findIndex(
+      //     city => city.geonameid === this.item.geonameid
+      //   ) !== -1
+      // )
+      return this.preferredCitiesIds.includes(this.item.geonameid)
+    },
+    isCapitalCity() {
+      return this.capitalCities.includes(this.item.name.toLowerCase())
     }
   },
   methods: {
@@ -88,7 +100,6 @@ export default {
           message: `${this.$i18n.t('errorMessages.save')}:  ${
             this.item.name
           }. ${this.$i18n.t('tryAgain')}`,
-          duration: 0,
           position: 'bottom-right'
         })
       } finally {
@@ -102,13 +113,15 @@ export default {
         tryAgain: 'Por favor, intente nuevamente.',
         errorMessages: {
           save: 'No se ha podido guardar la ciudad'
-        }
+        },
+        recommended: 'Recomendada'
       },
       en: {
         tryAgain: 'Please, try again.',
         errorMessages: {
           save: 'Could not save the city'
-        }
+        },
+        recommended: 'Recommended'
       }
     }
   }
@@ -191,6 +204,10 @@ export default {
         }
       }
     }
+  }
+
+  .recommended {
+    color: goldenrod;
   }
 }
 </style>

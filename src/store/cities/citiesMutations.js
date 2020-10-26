@@ -36,19 +36,25 @@ const mutations = {
   },
   setSearchCities(state, payload) {
     state.cities = citiesFactory()
+
+    // const searchCities = payload.data
+    // if (payload.newSearch) {
+    //   state.searchCities.data = searchCities.data
+    // } else {
+    //   //loading more
+    //   const ids = new Set(state.searchCities.data.map(city => city.geonameid))
+    //   state.searchCities.data = [
+    //     ...state.searchCities.data,
+    //     ...searchCities.data.filter(city => !ids.has(city.geonameid))
+    //   ]
+    //   state.searchCities.links = searchCities.links
+    //   state.searchCities.total = searchCities.total
+    // }
+
     const searchCities = payload.data
-    if (payload.newSearch) {
-      state.searchCities.data = searchCities.data
-    } else {
-      //loading more
-      const ids = new Set(state.searchCities.data.map(city => city.geonameid))
-      state.searchCities.data = [
-        ...state.searchCities.data,
-        ...searchCities.data.filter(city => !ids.has(city.geonameid))
-      ]
-      state.searchCities.links = searchCities.links
-      state.searchCities.total = searchCities.total
-    }
+    state.searchCities.data.push(...searchCities.data)
+    state.searchCities.links = searchCities.links
+    state.searchCities.total = searchCities.total
   },
   setCountries(state, countries) {
     let countryMap = {}
@@ -56,6 +62,7 @@ const mutations = {
       country => (countryMap[country.name.toLowerCase()] = country)
     )
     state.countries = countryMap
+    state.capitalCities = countries.map(c => c.capital.toLowerCase())
   }
 }
 

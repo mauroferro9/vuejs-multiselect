@@ -26,6 +26,7 @@ Vue.use(Tag)
 Vue.use(Popconfirm)
 Vue.use(RadioGroup)
 Vue.use(RadioButton)
+Vue.use(RadioButton)
 
 Vue.prototype.$notify = Notification
 
