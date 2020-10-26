@@ -19,6 +19,9 @@ export default {
 
 <style lang="scss">
 .message {
-  line-height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 60px;
 }
 </style>

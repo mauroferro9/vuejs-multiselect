@@ -1,7 +1,6 @@
 <template>
   <div class="home">
-    <!-- <img alt="Vue logo" src="../assets/logo.png" /> -->
-    <!-- <HelloWorld msg="Welcome to Your Vue.js App" /> -->
+    <i18n />
     <Cities />
   </div>
 </template>
@@ -10,7 +9,8 @@
 export default {
   name: 'Home',
   components: {
-    Cities: () => import('@/components/Cities.vue')
+    Cities: () => import('@/components/cities/Cities.vue'),
+    i18n: () => import('@/components/i18n')
   }
 }
 </script>

@@ -6,16 +6,18 @@
   >
     <div class="city-item__info" @click="update">
       <h1 class="name">
-        <text-highlight :queries="highlight">{{ item.name }}</text-highlight>
+        <text-highlight :queries="highlight" :class="{ highlight }">
+          {{ item.name }}
+        </text-highlight>
       </h1>
       <div class="country">
-        <text-highlight :queries="highlight">
+        <text-highlight :queries="highlight" :class="{ highlight }">
           {{ item.subcountry }},
         </text-highlight>
         <div class="country__flag" v-if="hasFlag">
           <el-avatar :size="13" :src="flag"></el-avatar>
         </div>
-        <text-highlight :queries="highlight">
+        <text-highlight :queries="highlight" :class="{ highlight }">
           {{ item.country }}
         </text-highlight>
       </div>
@@ -124,7 +126,11 @@ export default {
 
   &.active {
     cursor: pointer;
-    background-color: #0471a6;
+    background-color: $primary-color;
+
+    &:hover {
+      background-color: rgba($primary-color, 0.9); // rgba(255, 117, 109, 0.9);
+    }
 
     .city-item__info {
       .name,
@@ -140,13 +146,22 @@ export default {
 
   &:hover {
     cursor: pointer;
-    background-color: #ff495c;
 
-    .city-item__info {
-      .name,
-      .country {
-        color: white;
+    &:not(.active) {
+      .city-item__info {
+        .name,
+        .country {
+          color: $primary-color;
+        }
       }
+    }
+  }
+
+  .highlight {
+    .text__highlight {
+      color: white;
+      background: $secondary;
+      font-weight: bold;
     }
   }
 
@@ -157,14 +172,14 @@ export default {
     align-items: flex-start;
 
     .name {
-      font-size: 1rem;
-      margin-block-start: 2px;
-      margin-block-end: 2px;
+      font-size: 1.1rem;
+      margin-block-start: 4px;
+      margin-block-end: 4px;
     }
 
     .country {
       display: flex;
-      font-size: 0.8rem;
+      font-size: 0.9rem;
       color: #56585a;
 
       &__flag {

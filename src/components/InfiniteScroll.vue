@@ -1,5 +1,5 @@
 <template>
-  <section>
+  <section style="min-height: 5px">
     <div v-for="item in items" :key="item[itemKey]">
       <slot name="item" v-bind:item="item" />
     </div>

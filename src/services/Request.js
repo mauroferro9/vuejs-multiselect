@@ -12,11 +12,12 @@ axios.interceptors.response.use(
       //custom messages
       return Promise.reject(error.message)
     } else {
-      return error.response &&
-        error.response.data &&
-        error.response.data.message
-        ? Promise.reject(error.response.data.message)
-        : Promise.reject(error.message)
+      // return error.response &&
+      // error.response.data &&
+      // error.response.data.message
+      // ? Promise.reject(error.response.data.message)
+      // : Promise.reject(error.message)
+      return Promise.reject(error.response)
     }
   }
 )

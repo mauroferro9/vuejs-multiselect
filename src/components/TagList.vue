@@ -12,7 +12,7 @@
         :confirmButtonText="$t('yes')"
         :cancelButtonText="$t('no')"
         icon="el-icon-delete"
-        iconColor="red"
+        iconColor="#ff756d"
         placement="top"
         :title="$t('confirm')"
         @onConfirm="removeItem(item)"
@@ -21,7 +21,7 @@
           slot="reference"
           icon="el-icon-close"
           type="text"
-          size="mini"
+          size="medium"
           round
         />
       </el-popconfirm>
@@ -73,17 +73,30 @@ export default {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  padding: 10px;
 
   .tag {
     margin: 5px 0;
+    background-color: $primary-color;
+    border-color: unset;
+    color: white;
+    border-radius: 20px;
+    user-select: none;
+    font-size: 0.8rem;
+
     &:not(:first-of-type) {
       margin-left: 10px;
     }
-    .el-icon-close:hover {
-      color: #fff;
-      background-color: #409eff;
-      border-radius: 50%;
+    .el-icon-close {
+      color: white;
+      &:hover {
+        color: $primary-color;
+        background-color: white;
+        border-radius: 50%;
+      }
+    }
+
+    .el-button--medium.is-round {
+      padding: unset;
     }
   }
 }

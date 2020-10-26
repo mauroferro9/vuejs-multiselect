@@ -81,7 +81,7 @@ const actions = {
           tries--
         }
         if (!allFulfilled) {
-          Promise.reject('lalalala')
+          Promise.reject('Could not load all favorites cities info')
         }
       })
       .catch(error => {

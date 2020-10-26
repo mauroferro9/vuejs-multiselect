@@ -1,20 +1,16 @@
 <template>
   <section class="cities">
-    <!-- <input type="radio" value="en" name="en" v-model="locale" />
-    <label for="en">English</label><br />
-
-    <input type="radio" value="es" name="es" v-model="locale" />
-    <label for="es">Español</label><br /> -->
-    <el-radio-group v-model="locale">
-      <el-radio-button label="es">Español</el-radio-button>
-      <el-radio-button label="en">English</el-radio-button>
-    </el-radio-group>
-
-    <div class="cities-body">
-      <h1 v-if="preferredCities.data.length">
+    <h1 class="title">
+      <span v-if="preferredCities.data.length">
+        <i class="el-icon-collection-tag"></i>
         {{ $t('titleFavorite') }} ({{ preferredCities.data.length }})
-      </h1>
+      </span>
+      <span v-if="!preferredCities.data.length && !loading">
+        ☹️ Aun no tiene ciudades
+      </span>
+    </h1>
 
+    <div class="cities-header">
       <TagList
         v-if="preferredCities.data"
         :items="preferredCities.data"
@@ -22,51 +18,55 @@
         :closable="true"
         @onRemove="removeCity"
       />
+    </div>
 
-      <el-input
-        v-model="search"
-        prefix-icon="el-icon-search"
-        :placeholder="$t('search.placeholder')"
-        clearable
-        @input="filterCities"
-        class="cities-body__search"
-      />
-
-      <div class="cities-body__list">
-        <InfiniteScroll
-          :items="items"
-          item-key="geonameid"
-          @refetch="fetchCities"
-        >
-          <template v-slot:item="{ item }">
-            <CityItem :item="item" :highlight="highlightText" />
-            <!-- @onUpdate="updateCity" -->
-          </template>
-        </InfiniteScroll>
-        <Message
-          icon="el-icon-loading"
-          class="loading-wrapper"
-          v-if="loading && !retries"
+    <div class="body-wrapper">
+      <div class="cities-body">
+        <el-input
+          v-model="search"
+          prefix-icon="el-icon-search"
+          :placeholder="$t('search.placeholder')"
+          clearable
+          @input="filterCities"
+          class="cities-body__search"
         />
-        <!-- <span v-if="loading && !retries" class="loading-wrapper">
+
+        <div class="cities-body__list">
+          <InfiniteScroll
+            :items="items"
+            item-key="geonameid"
+            @refetch="fetchCities"
+          >
+            <template v-slot:item="{ item }">
+              <CityItem :item="item" :highlight="highlightText" />
+              <!-- @onUpdate="updateCity" -->
+            </template>
+          </InfiniteScroll>
+          <Message
+            icon="el-icon-loading"
+            class="loading-wrapper"
+            v-if="loading && !retries"
+          />
+          <!-- <span v-if="loading && !retries" class="loading-wrapper">
           <i class="el-icon-loading"></i>
         </span> -->
-        <Message
-          icon="el-icon-warning-outline"
-          :text="$t('noResults')"
-          v-if="!loading && !retries && !items.length"
-        />
-        <!-- <span v-if="!loading && !retries && !items.length">
+          <Message
+            icon="el-icon-warning-outline"
+            :text="$t('noResults')"
+            v-if="!loading && !retries && !items.length"
+          />
+          <!-- <span v-if="!loading && !retries && !items.length">
           <i class="el-icon-warning-outline"></i>
           No se encontraron resultados.
         </span> -->
-      </div>
-      <Message :text="$t('errorMessages.more')" v-if="!loading && retries" />
-      <!-- <span v-if="retries" class="loading-wrapper">
+        </div>
+        <Message :text="$t('errorMessages.more')" v-if="!loading && retries" />
+        <!-- <span v-if="retries" class="loading-wrapper">
         <i class="el-icon-loading"></i>
         <span>Oops! An error has ocurred while getting more cities.</span><br />
         <span>Let's try one more time!</span>
       </span> -->
+      </div>
     </div>
   </section>
 </template>
@@ -74,15 +74,15 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import debounce from 'lodash.debounce'
-import CityItem from './CityItem'
+import CityItem from './components/CityItem'
 
 const DEBOUNCE_TIME = 300
+const TIMEOUT_TIME = 2000
 
 export default {
   name: 'Cities',
   data() {
     return {
-      locale: this.$i18n.locale,
       search: '',
       allCities: {
         offset: 0,
@@ -99,11 +99,7 @@ export default {
       currentOffset: 0
     }
   },
-  watch: {
-    locale(val) {
-      this.$i18n.locale = val
-    }
-  },
+
   computed: {
     ...mapGetters('cities', [
       'cities',
@@ -126,9 +122,9 @@ export default {
   },
   components: {
     CityItem,
-    TagList: () => import('./TagList.vue'),
-    InfiniteScroll: () => import('./InfiniteScroll.vue'),
-    Message: () => import('./Message.vue')
+    TagList: () => import('../TagList.vue'),
+    InfiniteScroll: () => import('../InfiniteScroll.vue'),
+    Message: () => import('../Message.vue')
   },
   methods: {
     ...mapActions('cities', [
@@ -153,6 +149,10 @@ export default {
       }
     },
     fetchCities() {
+      // const isLastPage = this.search
+      //   ? this.currentOffset + this.filteredCities.limit >=
+      //     this.searchCities.total
+      //   : this.currentOffset + this.allCities.limit >= this.cities.total
       if (!this.loading) {
         this.currentOffset += this.limit
         this.search
@@ -181,7 +181,7 @@ export default {
           this.allCities.offset = offset
           setTimeout(() => {
             this.fetchAllCities(this.allCities.offset)
-          }, 1000)
+          }, TIMEOUT_TIME)
         } else {
           // TODO: allow mannualy retry
           this.$notify.error({
@@ -216,7 +216,7 @@ export default {
           this.filteredCities.offset = offset
           setTimeout(() => {
             this.fetchSearchCities(this.filteredCities.offset)
-          }, 300)
+          }, TIMEOUT_TIME)
         }
       } finally {
         this.loading = false
@@ -280,38 +280,71 @@ export default {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  max-height: 80vh;
   padding: 20px;
 
-  .cities-body {
+  .cities-header {
+    margin-bottom: 20px;
+    overflow: auto;
+    height: 30vh;
+  }
+  .title {
+    font-size: 1.1rem;
+  }
+
+  .body-wrapper {
     display: flex;
-    flex-direction: column;
-    flex-grow: 1;
+    justify-content: center;
 
-    @include sm {
-      flex-basis: 50%;
-    }
+    .cities-body {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      border-radius: 4px;
+      justify-content: flex-start;
 
-    &__search {
-      .el-input__inner {
-        border-radius: 4px 4px 0 0;
+      &:hover {
+        box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
       }
-    }
 
-    &__list {
-      margin-top: 0;
-      min-height: 60px;
-      max-height: 50vh;
-      overflow: auto;
-      border: solid 1px #dcdfe6;
-      border-top: none;
-      border-radius: 0 0 4px 4px;
-    }
-    .loading-wrapper {
-      min-height: 40px;
+      @include sm {
+        max-width: 80%;
+      }
 
-      [class^='el-icon-'] {
-        font-size: 30px;
-        color: #0471a6;
+      @include lg {
+        max-width: 70%;
+      }
+
+      @include lg {
+        max-width: 60%;
+      }
+
+      &__search {
+        .el-input__inner {
+          font-size: 1rem;
+          border-radius: 4px 4px 0 0;
+          height: 50px;
+          line-height: 50px;
+        }
+      }
+
+      &__list {
+        margin-top: 0;
+        // height: 50vh;
+        // min-height: 60px;
+        height: 50vh;
+        overflow: auto;
+        border: solid 1px #dcdfe6;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+      }
+      .loading-wrapper {
+        min-height: 40px;
+
+        [class^='el-icon-'] {
+          font-size: 30px;
+          color: #0471a6;
+        }
       }
     }
   }
