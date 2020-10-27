@@ -122,6 +122,7 @@ export default {
   align-items: center;
   padding: 10px 30px;
   border-bottom: solid 1px $gray;
+  background: white;
 
   &.active {
     cursor: pointer;

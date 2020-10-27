@@ -1,7 +1,11 @@
 <template>
   <section class="cities">
     <!-- favorites list -->
-    <div v-loading="loadingFav" :element-loading-text="$t('loading.fav')">
+    <div
+      v-loading="loadingFav"
+      :element-loading-text="$t('loading.fav')"
+      class="head-wrapper"
+    >
       <!-- header -->
       <h1 class="title">
         <span v-if="preferredCities.data.length">
@@ -35,13 +39,13 @@
     </div>
 
     <!-- results counter -->
-    <small v-show="!loading" class="results">
+    <span v-show="!loading" class="results">
       <i class="el-icon-location-outline"></i> {{ resultsCounter }}
       {{ $t('resultsFound') }}
       <span v-show="search">
         for <strong>“{{ search }}”</strong>
       </span>
-    </small>
+    </span>
 
     <div class="body-wrapper">
       <div class="cities-body">
@@ -311,13 +315,19 @@ export default {
   max-height: 80vh;
   padding: 20px;
 
+  .head-wrapper {
+    .el-loading-mask {
+      background-color: transparent;
+    }
+  }
+
   .cities-header {
     margin-bottom: 20px;
     overflow: auto;
     height: 20vh;
   }
   .title {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
   }
 
   .body-wrapper {
@@ -358,13 +368,12 @@ export default {
 
       &__list {
         margin-top: 0;
-        // height: 50vh;
-        // min-height: 60px;
         height: 50vh;
         overflow: auto;
         border: solid 1px #dcdfe6;
         border-top: none;
         border-radius: 0 0 4px 4px;
+        background: white;
         .spinner {
           min-height: 50px;
         }

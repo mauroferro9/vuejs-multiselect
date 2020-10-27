@@ -18,6 +18,16 @@ export default {
 
 <style lang="scss">
 html {
+  background: linear-gradient(
+      rgba(255, 255, 255, 0.9),
+      rgba(255, 255, 255, 0.9)
+    ),
+    url(./assets/images/background.jpg) no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+
   font-family: $font-family;
 
   .el-loading-spinner .path {
