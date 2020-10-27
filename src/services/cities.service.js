@@ -32,11 +32,11 @@ const saveCities = payload => {
   return Request.patch(`${PATH.PREFERENCES}`, payload)
 }
 
-const getPreferences = () => {
+export const getPreferences = () => {
   return Request.get(`${PATH.PREFERENCES}`)
 }
 
-const getCountries = () => {
+export const getCountries = () => {
   return axios.get(`${PATH.COUNTRIES}`)
 }
 

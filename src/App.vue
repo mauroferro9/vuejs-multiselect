@@ -18,7 +18,7 @@ export default {
 
 <style lang="scss">
 html {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: $font-family;
 
   .el-loading-spinner .path {
     stroke: $secondary-color;

@@ -15,8 +15,8 @@ import {
   RadioButton,
   Notification
 } from 'element-ui'
-import 'element-ui/lib/theme-chalk/index.css'
 import ElementLocale from 'element-ui/lib/locale'
+import 'element-ui/lib/theme-chalk/index.css'
 
 Vue.use(Input)
 Vue.use(Button)

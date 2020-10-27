@@ -12,11 +12,6 @@ axios.interceptors.response.use(
       //custom messages
       return Promise.reject(error.message)
     } else {
-      // return error.response &&
-      // error.response.data &&
-      // error.response.data.message
-      // ? Promise.reject(error.response.data.message)
-      // : Promise.reject(error.message)
       return Promise.reject(error.response)
     }
   }
@@ -28,7 +23,7 @@ export default {
       method: 'get',
       url,
       ...config
-    }) //.catch(catchMiddleware)
+    })
   },
   post(url, data, config = {}) {
     return axios({
@@ -36,7 +31,7 @@ export default {
       url,
       data,
       ...config
-    }) //.catch(catchMiddleware)
+    })
   },
   put(url, data, config = {}) {
     return axios({
@@ -44,7 +39,7 @@ export default {
       url,
       data,
       ...config
-    }) //.catch(catchMiddleware)
+    })
   },
   patch(url, data, config = {}) {
     return axios({
@@ -52,13 +47,13 @@ export default {
       url,
       data,
       ...config
-    }) //.catch(catchMiddleware)
+    })
   },
   delete(url, config = {}) {
     return axios({
       method: 'delete',
       url,
       ...config
-    }) //.catch(catchMiddleware)
+    })
   }
 }

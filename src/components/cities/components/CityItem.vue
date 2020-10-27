@@ -3,8 +3,9 @@
     class="city-item"
     :class="{ active: isPreferred }"
     v-loading="loading"
+    @click="update"
   >
-    <div class="city-item__info" @click="update">
+    <div class="city-item__info">
       <h1 class="name">
         <text-highlight :queries="highlight" :class="{ highlight }">
           {{ item.name }}
@@ -26,14 +27,6 @@
     <div v-show="!isPreferred && isCapitalCity" class="recommended">
       <i class="el-icon-star-off"></i> {{ $t('recommended') }}
     </div>
-    <!-- 
-    <el-button
-      v-if="isPreferred"
-      icon="el-icon-star-on"
-      circle
-      type="warning"
-      plain
-    /> -->
   </section>
 </template>
 
@@ -48,7 +41,8 @@ export default {
       required: true
     },
     highlight: {
-      type: Array
+      type: Array,
+      default: () => []
     }
   },
   data() {
@@ -73,11 +67,6 @@ export default {
       return this.countries[this.item.country.toLowerCase()].flag
     },
     isPreferred() {
-      // return (
-      //   this.preferredCities.data.findIndex(
-      //     city => city.geonameid === this.item.geonameid
-      //   ) !== -1
-      // )
       return this.preferredCitiesIds.includes(this.item.geonameid)
     },
     isCapitalCity() {
@@ -87,9 +76,6 @@ export default {
   methods: {
     ...mapActions('cities', ['saveCities']),
     async update() {
-      // this.$emit('onUpdate', {
-      //   [this.item.geonameid]: !this.isPreferred
-      // })
       this.loading = true
       try {
         await this.saveCities({
@@ -97,7 +83,7 @@ export default {
         })
       } catch (error) {
         this.$notify.error({
-          message: `${this.$i18n.t('errorMessages.save')}:  ${
+          message: `${this.$i18n.t('errorMessages.save')}: ${
             this.item.name
           }. ${this.$i18n.t('tryAgain')}`,
           position: 'bottom-right'
@@ -135,14 +121,14 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 10px 30px;
-  border-bottom: solid 1px #dcdfe6;
+  border-bottom: solid 1px $gray;
 
   &.active {
     cursor: pointer;
     background-color: $primary-color;
 
     &:hover {
-      background-color: rgba($primary-color, 0.9); // rgba(255, 117, 109, 0.9);
+      background-color: rgba($primary-color, 0.9);
     }
 
     .city-item__info {
@@ -193,7 +179,7 @@ export default {
     .country {
       display: flex;
       font-size: 0.9rem;
-      color: #56585a;
+      color: $dark-gray;
 
       &__flag {
         margin: 0 5px;
@@ -207,7 +193,7 @@ export default {
   }
 
   .recommended {
-    color: goldenrod;
+    color: $gold;
   }
 }
 </style>

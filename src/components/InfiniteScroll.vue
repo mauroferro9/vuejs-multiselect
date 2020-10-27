@@ -27,8 +27,7 @@ export default {
   },
   methods: {
     handleScroll(isVisible) {
-      // TODO: handle short list
-      if (!isVisible || this.items.length <= 6) return
+      if (!isVisible) return
       this.$emit('refetch')
     }
   }

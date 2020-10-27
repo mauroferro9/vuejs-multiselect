@@ -6,7 +6,7 @@ const actions = {
       state.cancelRequest('cancelled')
     }
     const executor = c => {
-      state.cancelRequest = c
+      commit('setCancelRequest', c)
     }
     return CitiesService.getCities(payload, executor).then(response => {
       const isSearch = payload.filter
@@ -18,6 +18,7 @@ const actions = {
       } else {
         commit('setCities', response.data)
       }
+      commit('setCancelRequest', undefined)
       return response.data
     })
   },
@@ -36,53 +37,13 @@ const actions = {
       }
     })
   },
-  getPreferences({ commit }) {
+  getPreferences({ commit, dispatch }) {
     return CitiesService.getPreferences()
       .then(async response => {
         commit('setPreferences', response.data)
-        let promises = []
         let citiesIds = response.data && response.data.data
 
-        // citiesIds.forEach(cityId => {
-        //   promises.push(CitiesService.getCityById(cityId))
-        // })
-
-        // return Promise.all(promises)
-        //   .then(responses => {
-        //     const citiesInfo = responses.map(r => r.data)
-        //     commit('setPreferredCities', citiesInfo)
-        //   })
-        //   .catch(error => {
-        //     throw error
-        //   })
-        let allFulfilled = false
-        let tries = 2
-
-        while (tries > 0 && !allFulfilled) {
-          citiesIds.forEach(cityId => {
-            promises.push(CitiesService.getCityById(cityId))
-          })
-          const results = await Promise.allSettled(promises)
-          const fulfilled = results
-            .filter(result => result.status === 'fulfilled')
-            .map(result => result.value.data)
-          commit('setPreferredCities', fulfilled)
-
-          citiesIds = results
-            .filter(result => result.status === 'rejected')
-            .map(r =>
-              r.reason.config.url.substring(
-                r.reason.config.url.lastIndexOf('/') + 1
-              )
-            )
-
-          allFulfilled = citiesIds.length === 0
-          promises = []
-          tries--
-        }
-        if (!allFulfilled) {
-          Promise.reject('Could not load all favorites cities info')
-        }
+        await dispatch('getCitiesInfo', citiesIds)
       })
       .catch(error => {
         throw error
@@ -93,18 +54,43 @@ const actions = {
       commit('setCountries', response.data)
       return response.data
     })
-  }
+  },
 
-  // getPreferencesCitiesInfo({ commit }) {
-  //   return CitiesService.getPreferencesCitiesInfo()
-  //     .then(response => {
-  //       commit('setPreferences', response.data)
-  //       return response.data
-  //     })
-  //     .catch(error => {
-  //       throw error
-  //     })
-  // },
+  async getCitiesInfo({ commit }, citiesIds) {
+    let promises
+    let allFulfilled = false
+    let remainingTries = 2
+
+    while (remainingTries > 0 && !allFulfilled) {
+      promises = []
+      citiesIds.forEach(cityId => {
+        promises.push(CitiesService.getCityById(cityId))
+      })
+      // get all fav cities info
+      const results = await Promise.allSettled(promises)
+
+      // commit fulfilled data
+      const fulfilled = results
+        .filter(result => result.status === 'fulfilled')
+        .map(result => result.value.data)
+      commit('setPreferredCities', fulfilled)
+
+      // retry rejected
+      citiesIds = results
+        .filter(result => result.status === 'rejected')
+        .map(r =>
+          r.reason.config.url.substring(
+            r.reason.config.url.lastIndexOf('/') + 1
+          )
+        )
+
+      allFulfilled = citiesIds.length === 0
+      remainingTries--
+    }
+    if (!allFulfilled) {
+      Promise.reject('Could not load all favorites cities info')
+    }
+  }
 }
 
 export default actions

@@ -36,20 +36,7 @@ const mutations = {
   },
   setSearchCities(state, payload) {
     state.cities = citiesFactory()
-
-    // const searchCities = payload.data
-    // if (payload.newSearch) {
-    //   state.searchCities.data = searchCities.data
-    // } else {
-    //   //loading more
-    //   const ids = new Set(state.searchCities.data.map(city => city.geonameid))
-    //   state.searchCities.data = [
-    //     ...state.searchCities.data,
-    //     ...searchCities.data.filter(city => !ids.has(city.geonameid))
-    //   ]
-    //   state.searchCities.links = searchCities.links
-    //   state.searchCities.total = searchCities.total
-    // }
+    state.searchCities = citiesFactory()
 
     const searchCities = payload.data
     state.searchCities.data.push(...searchCities.data)
@@ -63,6 +50,13 @@ const mutations = {
     )
     state.countries = countryMap
     state.capitalCities = countries.map(c => c.capital.toLowerCase())
+  },
+  cleanCities(state) {
+    state.cities = citiesFactory()
+    state.searchCities = citiesFactory()
+  },
+  setCancelRequest(state, cancelRequest) {
+    state.cancelRequest = cancelRequest
   }
 }
 

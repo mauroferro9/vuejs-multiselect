@@ -6,7 +6,7 @@
       :disable-transitions="false"
       class="tag"
     >
-      {{ item.name }}
+      {{ item[itemText] }}
       <el-popconfirm
         v-show="closable"
         :confirmButtonText="$t('yes')"
@@ -40,6 +40,10 @@ export default {
     itemKey: {
       type: String,
       default: 'id'
+    },
+    itemText: {
+      type: String,
+      required: true
     },
     closable: {
       type: Boolean,
